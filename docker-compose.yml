@@ -1,0 +1,45 @@
+version: '3'
+services:
+  reactjs:
+    build:
+      context: ./frontend
+      dockerfile: reactjs.dockerfile
+    ports: 
+      - "3000:3000"
+    links:
+        - laravelapp   
+  laravelapp:
+    build:
+        context: ./backend
+        dockerfile: laravelapp.dockerfile
+    volumes:
+        - ./backend:/var/www
+    links:
+        - database
+        - cache
+    environment:
+        - "DB_PORT=3306"
+        - "DB_HOST=database"
+        - "REDIS_PORT=6379"
+        - "REDIS_HOST=cache"   
+  laravelweb:
+    build:
+      context: ./backend
+      dockerfile: laravelweb.dockerfile
+    volumes:
+        - ./backend:/var/www
+    ports:
+        - "8080:80"
+    links:
+        - laravelapp  
+  database:
+    image: mysql:5.6
+    environment:
+        - "MYSQL_ROOT_PASSWORD=secret"
+        - "MYSQL_DATABASE=homestead"
+    ports:
+        - "33061:3306"
+  cache:
+    image: redis:3.0
+    ports:
+        - "63791:6379"             
